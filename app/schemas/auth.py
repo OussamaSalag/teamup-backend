@@ -60,17 +60,6 @@ class LoginRequest(BaseModel):
     password: str
 
 
-class EmailVerifyRequest(BaseModel):
-    email: EmailStr
-    code: str
-
-    @field_validator("code")
-    @classmethod
-    def code_is_six_digits(cls, v: str) -> str:
-        if not re.fullmatch(r"\d{6}", v):
-            raise ValueError("Verification code must be exactly 6 digits")
-        return v
-
 
 class PasswordResetRequest(BaseModel):
     email: EmailStr

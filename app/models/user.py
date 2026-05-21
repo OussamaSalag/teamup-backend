@@ -52,7 +52,7 @@ class User(Base):
     bio: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     grade: Mapped[Optional[int]] = mapped_column(SmallInteger, nullable=True)
     is_email_verified: Mapped[bool] = mapped_column(
-        Boolean, nullable=False, default=False
+        Boolean, nullable=False, default=True
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=datetime.utcnow
@@ -73,6 +73,9 @@ class User(Base):
     )
     preferences: Mapped[Optional[UserPreference]] = relationship(
         "UserPreference", back_populates="user", uselist=False, cascade="all, delete-orphan"
+    )
+    project_memberships: Mapped[list["ProjectMember"]] = relationship(
+        "ProjectMember", back_populates="user", cascade="all, delete-orphan"
     )
 
 
@@ -106,6 +109,9 @@ class Skill(Base):
     # Relationships
     profile_skills: Mapped[list[ProfileSkill]] = relationship(
         "ProfileSkill", back_populates="skill"
+    )
+    project_skills: Mapped[list["ProjectSkill"]] = relationship(
+        "ProjectSkill", back_populates="skill"
     )
 
 

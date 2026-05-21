@@ -62,7 +62,7 @@ class AuthService:
     # ------------------------------------------------------------------
 
     @staticmethod
-    async def register(db: AsyncSession, data: RegisterRequest) -> dict[str, Any]:
+    async def register(db: AsyncSession, data: RegisterRequest) -> TokenResponse:
         # 1. Domain check
         enforce_email_domain(data.email)
 
@@ -91,7 +91,7 @@ class AuthService:
             username=data.username,
             email=data.email,
             hashed_password=hash_password(data.password),
-            is_email_verified=False,
+            is_email_verified=True,
         )
         db.add(user)
         await db.flush()  # populate user.id before FK inserts
@@ -104,56 +104,9 @@ class AuthService:
 
         await db.commit()
 
-        # 6. Generate & store verification code
-        code = _generate_code()
-        _verification_codes[data.email] = code
-
-        # TODO: Send email via SMTP/SendGrid — using console print for now
-        print(f"[TeamUp] Verification code for {data.email}: {code}")
-
-        return {
-            "message": "Verification code sent to your email",
-            "email": data.email,
-        }
-
-    # ------------------------------------------------------------------
-    # Verify email
-    # ------------------------------------------------------------------
-
-    @staticmethod
-    async def verify_email(
-        db: AsyncSession, email: str, code: str
-    ) -> TokenResponse:
-        # 1. Check code
-        stored = _verification_codes.get(email)
-        if stored is None or stored != code:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid or expired code",
-            )
-
-        # 2. Find user
-        result = await db.execute(select(User).where(User.email == email))
-        user = result.scalar_one_or_none()
-        if user is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found",
-            )
-
-        # 3. Mark verified
-        user.is_email_verified = True
-        await db.commit()
-        await db.refresh(user)
-
-        # 4. Get role
-        role = await _get_user_role(db, user.id)
-
-        # 5. Issue token
+        # 6. Issue token
+        role = "student"
         token = create_access_token({"sub": str(user.id), "role": role})
-
-        # 6. Clean up code
-        _verification_codes.pop(email, None)
 
         return TokenResponse(
             access_token=token,

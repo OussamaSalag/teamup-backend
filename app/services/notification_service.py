@@ -89,7 +89,7 @@ class NotificationService:
             )
         )
         count = result.scalar_one() or 0
-        return {"unread_count": count}
+        return {"count": count}
 
 
 notification_service = NotificationService()

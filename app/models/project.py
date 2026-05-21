@@ -100,8 +100,7 @@ class ProjectMember(Base):
 
     # Relationships
     project: Mapped[Project] = relationship("Project", back_populates="members")
-
-
+    user: Mapped["User"] = relationship("User", back_populates="project_memberships")
 class ProjectSkill(Base):
     __tablename__ = "project_skills"
     __table_args__ = (
@@ -121,6 +120,7 @@ class ProjectSkill(Base):
 
     # Relationships
     project: Mapped[Project] = relationship("Project", back_populates="skills")
+    skill: Mapped["Skill"] = relationship("Skill", back_populates="project_skills")
 
 
 class ProjectJoinRequest(Base):

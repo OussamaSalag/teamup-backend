@@ -6,7 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.dependencies import get_current_user, get_db
 from app.models.user import User
 from app.schemas.auth import (
-    EmailVerifyRequest,
     LoginRequest,
     PasswordResetConfirm,
     PasswordResetRequest,
@@ -24,25 +23,13 @@ router = APIRouter(tags=["Authentication"])
 # ---------------------------------------------------------------------------
 
 
-@router.post("/register", status_code=status.HTTP_201_CREATED)
+@router.post("/register", status_code=status.HTTP_201_CREATED, response_model=TokenResponse)
 async def register(
     data: RegisterRequest,
     db: AsyncSession = Depends(get_db),
-) -> dict:
+) -> TokenResponse:
     return await auth_service.register(db, data)
 
-
-# ---------------------------------------------------------------------------
-# POST /verify-email
-# ---------------------------------------------------------------------------
-
-
-@router.post("/verify-email", response_model=TokenResponse)
-async def verify_email(
-    data: EmailVerifyRequest,
-    db: AsyncSession = Depends(get_db),
-) -> TokenResponse:
-    return await auth_service.verify_email(db, data.email, data.code)
 
 
 # ---------------------------------------------------------------------------
