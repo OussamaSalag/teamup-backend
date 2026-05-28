@@ -12,3 +12,4 @@ redis
 websockets
 python-dotenv
 slowapi
+email-validator
