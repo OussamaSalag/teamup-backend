@@ -1,11 +1,9 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any
 from jose import jwt, JWTError
-from passlib.context import CryptContext
+import bcrypt as _bcrypt
 from fastapi import HTTPException, status
 from app.core.config import settings
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = None) -> str:
     to_encode = data.copy()
@@ -25,10 +23,10 @@ def verify_token(token: str) -> dict[str, Any] | None:
         return None
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    return _bcrypt.hashpw(password.encode('utf-8'), _bcrypt.gensalt()).decode('utf-8')
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    return _bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 def enforce_email_domain(email: str) -> None:
     if not email.endswith(f"@{settings.ALLOWED_EMAIL_DOMAIN}"):
